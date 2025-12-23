@@ -688,73 +688,86 @@ class Downloader:
         print("="*80)
 
 """ The downloader """
+def display_menu() -> None:
+    """Display the main menu."""
+    menu = """
+    ========================================================================
+    INTERACTIVE SPOTIFY DOWNLOADER
+    ========================================================================
+    Select an option:
+    1.  Download Track
+    2.  Download Album
+    3.  Download Playlist
+    4.  Download from Text File
+    5.  Search and Download Song
+    6.  Download User Playlists (Requires Spotify Account)
+    7.  Download Liked Songs (Requires Spotify Account)
+    8.  Download Saved Albums (Requires Spotify Account)
+    9.  Check/Install spotdl
+    10. Show spotdl Help
+    11. Show Program Info
+    12. Exit
+    ========================================================================
+    """
+    print(menu)
+
+
 def main():
-    """
-    Main function to run the Spotify Downloader
-    """
-    downloader = Downloader() 
+    """Main function to run the Spotify Downloader."""
+    print("Initializing Spotify Downloader...")
+    
+    # Check spotdl installation
+    if not Downloader.check_spotdl():
+        print("\nFailed to install spotdl. Please install it manually using:")
+        print("pip install spotdl")
+        print("Then run the program again.")
+        return
+    
+    downloader = Downloader()
+    
     while True:
-        print("\n" + "="*80)
-        print("INTERACTIVE SPOTIFY DOWNLOADER")
-        print("="*80)
-        print("Select an option:")
-        print("1. Download Track")
-        print("2. Download Album")
-        print("3. Download Playlist")
-        print("4. Download from Text File")
-        print("5. Search and Download Song")
-        print("6. Download User Playlists (Requires Spotify Account)")
-        print("7. Download Liked Songs (Requires Spotify Account)")
-        print("8. Download Saved Albums (Requires Spotify Account)")
-        print("9. Check/Install spotdl")
-        print("10. Show spotdl Help")
-        print("11. Show Program Info")
-        print("12. Exit")
-        print("="*80)
+        display_menu()
+        choice = input("\nEnter your choice (1-12): ").strip()
         
-        choice = input("\nEnter your choice (1-11): ").strip()
+        actions = {
+            "1": downloader.download_track,
+            "2": downloader.download_album,
+            "3": downloader.download_playlist,
+            "4": downloader.download_from_file,
+            "5": downloader.search_a_song,
+            "6": downloader.download_user_playlist,
+            "7": downloader.download_user_liked_songs,
+            "8": downloader.download_user_saved_albums,
+            "9": Downloader.check_spotdl,
+            "10": Downloader.show_spotdl_help,
+            "11": Downloader.program_info,
+        }
         
-        if choice == "1":
-            downloader.download_track()
-        elif choice == "2":
-            downloader.download_album()
-        elif choice == "3":
-            downloader.download_playlist()
-        elif choice == "4":
-            downloader.download_from_file()
-        elif choice == "5":
-            downloader.search_a_song()
-        elif choice == "6":
-            downloader.download_user_playlist()
-        elif choice == "7":
-            downloader.download_user_liked_songs()
-        elif choice == "8":
-            downloader.download_user_saved_albums()
-        elif choice == "9":
-            downloader.check_spotdl()
-        elif choice == "10":
-            downloader.show_spotdl_help()
-        elif choice == "11":
-            downloader.program_info()
-        elif choice == "12":
+        if choice == "12":
             print("\nThank you for using Spotify Downloader. Goodbye!")
             break
+        
+        action = actions.get(choice)
+        if action:
+            action()
         else:
             print("Invalid choice. Please enter a number between 1 and 12.")
+            continue
         
-        # Ask if user wants to continue
-        if choice != "11":
+        # Ask if user wants to continue (except for help/info actions)
+        if choice not in ["10", "11"]:
             cont = input("\nDo you want to perform another operation? (y/n): ").strip().lower()
             if cont not in ['y', 'yes']:
                 print("\nThank you for using Spotify Downloader. Goodbye!")
                 break
 
+
 if __name__ == "__main__":
-    # First check if spotdl is available
-    print("Checking spotdl installation...")
-    if Downloader.check_spotdl():
+    try:
         main()
-    else:
-        print("Failed to install spotdl. Please install it manually using:")
-        print("pip install spotdl")
-        print("Then run the program again.")
+    except KeyboardInterrupt:
+        print("\n\nProgram interrupted by user. Goodbye!")
+    except Exception as e:
+        logger.exception(f"Unexpected error in main: {e}")
+        print(f"\nAn unexpected error occurred: {e}")
+        print("Please check the error log for details.")
